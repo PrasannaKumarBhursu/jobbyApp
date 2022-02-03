@@ -1,5 +1,5 @@
 import './App.css'
-import JobsRoute from './components/JobsRoute'
+import JobItemDetailsRoute from './components/JobItemDetailsRoute'
 
 // These are the lists used in the application. You can move them to any component needed.
 
@@ -42,6 +42,6 @@ import JobsRoute from './components/JobsRoute'
 // ]
 
 // Replace your code here
-const App = () => <JobsRoute />
+const App = () => <JobItemDetailsRoute />
 
 export default App
