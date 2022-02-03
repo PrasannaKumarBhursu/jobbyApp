@@ -1,0 +1,31 @@
+.home_route_container {
+  background-image: url("https://assets.ccbp.in/frontend/react-js/home-sm-bg.png");
+  background-size: cover;
+  min-height: 89.5vh;
+}
+
+@media screen and (min-width: 768px) {
+  .home_route_container {
+    background-image: url("https://assets.ccbp.in/frontend/react-js/home-lg-bg.png");
+    background-size: cover;
+    min-height: 89.5vh;
+  }
+  .homeroute__card {
+    max-width: 33rem;
+  }
+  .homeroute__title {
+    font-size: 3rem;
+  }
+  .homeroute__discription {
+    font-size: 1.5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .homeroute__title {
+    font-size: 1.8rem;
+  }
+  .homeroute__discription {
+    font-size: 1.25rem;
+  }
+}
