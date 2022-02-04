@@ -1,81 +1,83 @@
-import React, { useState } from "react";
-import "./index.css";
-import { Card, Button, Form, Spinner } from "react-bootstrap";
-import Cookies from "js-cookie";
+import React, {useState} from 'react'
+import './index.css'
+import {Card, Button, Form, Spinner} from 'react-bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import Cookies from 'js-cookie'
 
-export const LoginRoute = (props) => {
-  const [usererr, setUsererr] = useState("");
-  const [pass, setPass] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [failmsg, setFailmsg] = useState("");
-  const [showSpinner, setShowSpinner] = useState(false);
+export const LoginRoute = props => {
+  const [usererr, setUsererr] = useState('')
+  const [pass, setPass] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [failmsg, setFailmsg] = useState('')
+  const [showSpinner, setShowSpinner] = useState(false)
 
-  const onSuccess = (jwt_token) => {
-    const { history } = props;
-    Cookies.set("jwt_token", jwt_token, { expires: 30 });
-    setShowSpinner(false);
-    history.replace("/home");
-  };
+  const onSuccess = jwt_token => {
+    const {history} = props
+    Cookies.set('jwt_token', jwt_token, {expires: 30})
+    setShowSpinner(false)
+    history.replace('/home')
+  }
 
   const onFailure = () => {
-    setFailmsg("*Username and Password don't match");
-  };
+    setFailmsg("*Username and Password don't match")
+  }
 
-  const getDetails = async (e) => {
-    e.preventDefault();
-    setShowSpinner(true);
-    const userDetails = { username, password };
-    const url = "https://apis.ccbp.in/login";
+  const getDetails = async e => {
+    e.preventDefault()
+    setShowSpinner(true)
+    const userDetails = {username, password}
+    const url = 'https://apis.ccbp.in/login'
 
     const options = {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(userDetails),
-    };
-
-    const response = await fetch(url, options);
-    const data = await response.json();
-    if (response.ok === true) {
-      onSuccess(data.jwt_token);
-    } else {
-      setShowSpinner(false);
-      onFailure();
     }
-  };
-  console.log(username);
 
-  const userName = (e) => {
-    setUsername(e.target.value);
-  };
+    const response = await fetch(url, options)
+    const data = await response.json()
+    if (response.ok === true) {
+      onSuccess(data.jwt_token)
+    } else {
+      setShowSpinner(false)
+      onFailure()
+    }
+  }
+  console.log(username)
 
-  const userPassword = (e) => {
-    setPassword(e.target.value);
-  };
+  const userName = e => {
+    console.log('hello')
+    setUsername(e.target.value)
+  }
 
-  const blurEventUser = (e) => {
-    e.target.value === "" ? setUsererr("Required*") : setUsererr("");
-  };
+  const userPassword = e => {
+    setPassword(e.target.value)
+  }
 
-  const blurEventPass = (e) => {
-    e.target.value === "" ? setPass("Required*") : setPass("");
-  };
+  const blurEventUser = e => {
+    e.target.value === '' ? setUsererr('Required*') : setUsererr('')
+  }
+
+  const blurEventPass = e => {
+    e.target.value === '' ? setPass('Required*') : setPass('')
+  }
 
   return (
     <>
       {showSpinner ? (
         <div
           className="d-flex justify-content-center align-items-center bg-dark"
-          style={{ minHeight: "100vh" }}
+          style={{minHeight: '100vh'}}
         >
           <Spinner animation="border" variant="primary" />
         </div>
       ) : (
         <div
           className="d-flex justify-content-center align-items-center p-4 bg-dark"
-          style={{ minHeight: "100vh" }}
+          style={{minHeight: '100vh'}}
         >
           <Form onSubmit={getDetails}>
-            <Card style={{ width: "22rem" }} className="p-3 bg-dark shadow-lg">
+            <Card style={{width: '22rem'}} className="p-3 bg-dark shadow-lg">
               <Card.Body>
                 <div className="text-center">
                   <img
@@ -88,12 +90,12 @@ export const LoginRoute = (props) => {
                   <label
                     htmlFor="userName"
                     style={{
-                      fontSize: "0.9rem",
-                      color: "white",
-                      textTransform: "capitalize",
+                      fontSize: '0.9rem',
+                      color: 'white',
+                      textTransform: 'capitalize',
                     }}
                   >
-                    USERNAME
+                    USER
                   </label>
                   <input
                     type="text"
@@ -110,9 +112,9 @@ export const LoginRoute = (props) => {
                   <label
                     htmlFor="userPassword"
                     style={{
-                      fontSize: "0.9rem",
-                      color: "white",
-                      textTransform: "capitalize",
+                      fontSize: '0.9rem',
+                      color: 'white',
+                      textTransform: 'capitalize',
                     }}
                   >
                     PASSWORD
@@ -128,7 +130,7 @@ export const LoginRoute = (props) => {
                   />
                   <p className="text-danger">{pass}</p>
                 </div>
-                <Card.Text style={{ textTransform: "capitalize" }}></Card.Text>
+                <Card.Text style={{textTransform: 'capitalize'}}></Card.Text>
               </Card.Body>
               <Button type="submit">Login</Button>
               <p className="text-danger mt-2">{failmsg}</p>
@@ -137,5 +139,5 @@ export const LoginRoute = (props) => {
         </div>
       )}
     </>
-  );
-};
+  )
+}
