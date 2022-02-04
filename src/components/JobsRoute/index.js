@@ -4,10 +4,13 @@ import {AiFillStar} from 'react-icons/ai'
 import {IoLocationOutline} from 'react-icons/io5'
 import {CgShoppingBag} from 'react-icons/cg'
 import {BiSearch} from 'react-icons/bi'
+import {Link} from 'react-router-dom'
+import Loader from 'react-loader-spinner'
 
 import Profile from '../Profile'
 import EmploymentTypes from '../EmploymentTypes'
 import SalaryRanges from '../SalaryRanges'
+import JobbyHeader from '../JobbyHeader'
 
 import './index.css'
 
@@ -49,6 +52,13 @@ const salaryRangesList = [
   },
 ]
 
+const jobApiStatusConstants = {
+  initial: 'INITIAL',
+  inprogress: 'INPRORESS',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+}
+
 class JobsRoute extends Component {
   state = {
     jobsList: [],
@@ -56,6 +66,8 @@ class JobsRoute extends Component {
     employmentTypes: [],
     salaryRange: '',
     searchInput: '',
+    apiStatus: jobApiStatusConstants.initial,
+    profileApiStatus: jobApiStatusConstants.initial,
   }
 
   componentDidMount() {
@@ -65,6 +77,7 @@ class JobsRoute extends Component {
 
   getJobDetails = async () => {
     const {employmentTypes, salaryRange, searchInput} = this.state
+    this.setState({apiStatus: jobApiStatusConstants.inprogress})
     const jwtToken = Cookies.get('jwt_token')
     console.log('trigger')
 
@@ -91,11 +104,19 @@ class JobsRoute extends Component {
       }))
       console.log(formattedData)
 
-      this.setState({jobsList: formattedData})
+      this.setState({
+        jobsList: formattedData,
+        apiStatus: jobApiStatusConstants.success,
+      })
+    } else {
+      this.setState({
+        apiStatus: jobApiStatusConstants.failure,
+      })
     }
   }
 
   getProfileDetails = async () => {
+    this.setState({profileApiStatus: jobApiStatusConstants.inprogress})
     const jwtToken = Cookies.get('jwt_token')
     const url = 'https://apis.ccbp.in/profile'
     const options = {
@@ -107,12 +128,21 @@ class JobsRoute extends Component {
     const response = await fetch(url, options)
     const data = await response.json()
     const profileDetails = data.profile_details
-    const updatedProfileDetails = {
-      name: profileDetails.name,
-      profileImageUrl: profileDetails.profile_image_url,
-      shortBio: profileDetails.short_bio,
+    if (response.ok === true) {
+      const updatedProfileDetails = {
+        name: profileDetails.name,
+        profileImageUrl: profileDetails.profile_image_url,
+        shortBio: profileDetails.short_bio,
+      }
+      this.setState({
+        profileDetails: updatedProfileDetails,
+        profileApiStatus: jobApiStatusConstants.success,
+      })
+    } else {
+      this.setState({
+        profileApiStatus: jobApiStatusConstants.failure,
+      })
     }
-    this.setState({profileDetails: updatedProfileDetails})
   }
 
   renderProfileComponent = () => {
@@ -139,7 +169,7 @@ class JobsRoute extends Component {
 
   renderEmploymentTypes = () => (
     <div>
-      <h1>Employment Types</h1>
+      <h1>Type of Employment</h1>
       <ul>
         {employmentTypesList.map(eachEmployment => (
           <EmploymentTypes
@@ -199,13 +229,35 @@ class JobsRoute extends Component {
           onKeyDown={this.onClickEnter}
           onChange={this.changeSearchInput}
         />
-        <BiSearch />
+
+        <button
+          testid="searchButton"
+          type="button"
+          onClick={this.getJobDetails}
+        >
+          {' '}
+          <BiSearch />
+        </button>
       </div>
     )
   }
 
+  renderNojobsView = () => (
+    <div>
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/no-jobs-img.png"
+        alt="no jobs"
+      />
+      <h1>No Jobs Found</h1>
+      <p>We could not find any jobs. Try other filters</p>
+    </div>
+  )
+
   renderJobsList = () => {
     const {jobsList} = this.state
+    if (jobsList.length === 0) {
+      return this.renderNojobsView()
+    }
     return (
       <ul>
         {jobsList.map(eachJob => {
@@ -221,50 +273,118 @@ class JobsRoute extends Component {
           } = eachJob
 
           return (
-            <li key={id}>
-              <div>
-                <img src={companyLogoUrl} alt="company logo" />
+            <Link key={id} to={`jobs/${id}`}>
+              <li>
                 <div>
-                  <p>{title}</p>
+                  <img src={companyLogoUrl} alt="company logo" />
                   <div>
-                    <AiFillStar />
-                    <p>{rating}</p>
+                    <h1>{title}</h1>
+                    <div>
+                      <AiFillStar />
+                      <p>{rating}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div>
                 <div>
                   <div>
-                    <IoLocationOutline />
-                    <p>{location}</p>
+                    <div>
+                      <IoLocationOutline />
+                      <p>{location}</p>
+                    </div>
+                    <div>
+                      <CgShoppingBag />
+                      <p>{employmentType}</p>
+                    </div>
                   </div>
-                  <div>
-                    <CgShoppingBag />
-                    <p>{employmentType}</p>
-                  </div>
+                  <p>{packagePerAnnum}</p>
                 </div>
-                <p>{packagePerAnnum}</p>
-              </div>
-              <hr />
-              <p>{jobDescription}</p>
-            </li>
+                <hr />
+                <h1>Description</h1>
+                <p>{jobDescription}</p>
+              </li>
+            </Link>
           )
         })}
       </ul>
     )
   }
 
+  renderLoadingView = () => (
+    <div className="loader-container" testid="loader">
+      <Loader type="ThreeDots" color="blue" height="50" width="50" />
+    </div>
+  )
+
+  onClickRetry = () => {
+    this.getJobDetails()
+  }
+
+  onClickProfileRetry = () => {
+    this.getProfileDetails()
+  }
+
+  renderFailureView = () => (
+    <div>
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/failure-img.png "
+        alt="failure view"
+      />
+      <h1>Oops! Something Went Wrong</h1>
+      <p>We cannot seem to find the page you are looking for</p>
+      <button type="button" onClick={this.onClickRetry}>
+        Retry
+      </button>
+    </div>
+  )
+
+  renderProfileFailureView = () => (
+    <button type="button" onClick={this.onClickProfileRetry}>
+      Retry
+    </button>
+  )
+
+  renderJobsPage = () => {
+    const {apiStatus} = this.state
+    switch (apiStatus) {
+      case jobApiStatusConstants.success:
+        return this.renderJobsList()
+      case jobApiStatusConstants.inprogress:
+        return this.renderLoadingView()
+      case jobApiStatusConstants.failure:
+        return this.renderFailureView()
+
+      default:
+        return null
+    }
+  }
+
+  renderProfilePage = () => {
+    const {profileApiStatus} = this.state
+    switch (profileApiStatus) {
+      case jobApiStatusConstants.success:
+        return this.renderProfileComponent()
+      case jobApiStatusConstants.inprogress:
+        return this.renderLoadingView()
+      case jobApiStatusConstants.failure:
+        return this.renderProfileFailureView()
+
+      default:
+        return null
+    }
+  }
+
   render() {
     return (
       <div>
+        <JobbyHeader />
         <div>
-          {this.renderProfileComponent()}
+          {this.renderProfilePage()}
           {this.renderEmploymentTypes()}
           {this.renderSalaryRangesTypes()}
         </div>
         <div>
           {this.renderSearchinput()}
-          {this.renderJobsList()}
+          {this.renderJobsPage()}
         </div>
       </div>
     )

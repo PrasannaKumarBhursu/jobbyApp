@@ -9,6 +9,7 @@ import {FiExternalLink} from 'react-icons/fi'
 
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
 import SimilarJobCard from '../SimilarJobCard'
+import JobbyHeader from '../JobbyHeader'
 
 import './index.css'
 
@@ -16,20 +17,27 @@ const jobApiStatusConstants = {
   initial: 'INITIAL',
   inprogress: 'INPRORESS',
   success: 'SUCCESS',
+  failure: 'FAILURE',
 }
 
 class JobItemDetailsRoute extends Component {
-  state = {jobDetailsList: [], apiStatus: jobApiStatusConstants.initial}
+  state = {
+    jobDetailsList: [],
+    apiStatus: jobApiStatusConstants.initial,
+  }
 
   componentDidMount() {
     this.getJobItemDetails()
   }
 
   getJobItemDetails = async () => {
+    const {match} = this.props
+    const {params} = match
+    const {id} = params
     this.setState({apiStatus: jobApiStatusConstants.inprogress})
     const jwtToken = Cookies.get('jwt_token')
 
-    const url = 'https://apis.ccbp.in/jobs/bb95e51b-b1b2-4d97-bee4-1d5ec2b96751'
+    const url = `https://apis.ccbp.in/jobs/${id}`
     const options = {
       headers: {
         Authorization: `Bearer ${jwtToken}`,
@@ -92,6 +100,10 @@ class JobItemDetailsRoute extends Component {
         jobDetailsList: formattedData,
         apiStatus: jobApiStatusConstants.success,
       })
+    } else {
+      this.setState({
+        apiStatus: jobApiStatusConstants.failure,
+      })
     }
   }
 
@@ -108,6 +120,7 @@ class JobItemDetailsRoute extends Component {
   renderCompanyDescription = () => {
     const {jobDetailsList} = this.state
     const {jobDetails, similarJobs} = jobDetailsList
+    console.log(jobDetails)
 
     const {
       companyLogoUrl,
@@ -115,6 +128,7 @@ class JobItemDetailsRoute extends Component {
       location,
       employmentType,
       packagePerAnnum,
+      rating,
       companyWebsiteUrl,
       lifeAtCompany,
       jobDescription,
@@ -127,10 +141,10 @@ class JobItemDetailsRoute extends Component {
         <div>
           <img src={companyLogoUrl} alt="job details company logo" />
           <div>
-            <p>{title}</p>
+            <h1>{title}</h1>
             <div>
               <AiFillStar />
-              <p>rating</p>
+              <p>{rating}</p>
             </div>
           </div>
         </div>
@@ -151,22 +165,24 @@ class JobItemDetailsRoute extends Component {
         <div>
           <h1>Description</h1>
           <div>
-            <p>Visit</p>
             <a href={companyWebsiteUrl} target="_blank" rel="noreferrer">
+              Visit
               <FiExternalLink />
             </a>
           </div>
         </div>
         <p>{jobDescription}</p>
         <div>
-          <p>Skills</p>
+          <h1>Skills</h1>
           <ul>{skills.map(eachSkill => this.renderSkill(eachSkill))}</ul>
         </div>
         <div>
+          <h1>Life at Company</h1>
           <p>{description}</p>
           <img src={imageUrl} alt="life at company" />
         </div>
         <div>
+          <h1>Similar Jobs</h1>
           <ul>
             {similarJobs.map(eachJob => (
               <SimilarJobCard key={eachJob.id} eachJob={eachJob} />
@@ -183,6 +199,24 @@ class JobItemDetailsRoute extends Component {
     </div>
   )
 
+  onClickRetry = () => {
+    this.getJobItemDetails()
+  }
+
+  renderFailureView = () => (
+    <div>
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/failure-img.png "
+        alt="failure view"
+      />
+      <h1>Oops! Something Went Wrong</h1>
+      <p>We cannot seem to find the page you are looking for</p>
+      <button type="button" onClick={this.onClickRetry}>
+        Retry
+      </button>
+    </div>
+  )
+
   renderJobDetailsPage = () => {
     const {apiStatus} = this.state
     switch (apiStatus) {
@@ -190,6 +224,8 @@ class JobItemDetailsRoute extends Component {
         return this.renderCompanyDescription()
       case jobApiStatusConstants.inprogress:
         return this.renderLoadingView()
+      case jobApiStatusConstants.failure:
+        return this.renderFailureView()
 
       default:
         return null
@@ -197,7 +233,12 @@ class JobItemDetailsRoute extends Component {
   }
 
   render() {
-    return <div>{this.renderJobDetailsPage()}</div>
+    return (
+      <div>
+        <JobbyHeader />
+        {this.renderJobDetailsPage()}
+      </div>
+    )
   }
 }
 

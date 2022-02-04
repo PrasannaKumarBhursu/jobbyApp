@@ -13,21 +13,22 @@ const SimilarJobCard = props => {
     jobDescription,
     location,
     employmentType,
+    rating,
   } = eachJob
 
   return (
     <li key={id}>
       <div>
-        <img src={companyLogoUrl} alt="job details company logo" />
+        <img src={companyLogoUrl} alt="similar job company logo" />
         <div>
-          <p>{title}</p>
+          <h1>{title}</h1>
           <div>
             <AiFillStar />
-            <p>rating</p>
+            <p>{rating}</p>
           </div>
         </div>
       </div>
-      <p>Description</p>
+      <h1>Description</h1>
       <p>{jobDescription}</p>
       <div>
         <div>
